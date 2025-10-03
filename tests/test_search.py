@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from src.search import Search
 
 
-def test_search(n_elements=15, n_iter=100, noise=0.4, c=2.):
+def test_search(n_elements=15, n_iter=300, noise=0.4, c=2.):
     np.random.seed(1)
 
     # to save evaluations for the plot
@@ -21,10 +21,10 @@ def test_search(n_elements=15, n_iter=100, noise=0.4, c=2.):
     elements = [element(i) for i in range(n_elements)]
 
     # run search
-    search = Search(elements)
+    search = Search(elements, c=c)
     count = np.zeros(n_elements)
     visits = np.zeros(n_elements)
-    search_iter = search.run(n_iter=n_iter, c=c)
+    search_iter = search.run(n_iter=n_iter)
 
     # take track of visits (*optional)
     for i, dct in enumerate(search_iter):

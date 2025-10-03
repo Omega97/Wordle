@@ -13,7 +13,7 @@ class Interface:
         self.allowed_wordles, self.allowed_guesses = load_data()
         self.wordl = Wordl(self.allowed_wordles, self.allowed_guesses)
 
-    def run_helper(self, green, yellow, black, n_iter, n_display=20):
+    def run_helper(self, green, yellow, black, n_iter, n_display=20, c=2.):
         """
         Run the program that helps you solve any given wordle
         """
@@ -33,7 +33,7 @@ class Interface:
             print(f'Solution = {sol[0]}')
         else:
             # Get best guesses
-            self.wordl.get_best_guess(n_iter)
+            self.wordl.get_best_guess(n_iter, c=c)
 
     def run_game(self):
         """

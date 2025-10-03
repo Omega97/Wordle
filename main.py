@@ -62,7 +62,13 @@ def main():
     rules = ColorRules()
 
     # Color rules
-    rules.add_rule(guess='CRATE', code = 'c_a_E')
+    rules.add_rule(guess='CRATE', code = '_r__e')
+    rules.add_rule(guess='SEWIN', code = '_e___')
+    rules.add_rule(guess='MUCHO', code = '____o')
+    rules.add_rule(guess='LORDS', code = '_or__')
+
+    # rules.add_rule(guess='CRATE', code = 'cra__')
+    # rules.add_rule(guess='CRATE', code = 'c_a_E')
     # rules.add_rule(guess='CRATE', code = '____e')
     # rules.add_rule(guess='LINED', code = 'l__E_')
     # rules.add_rule(guess='WOMBS', code = '_O___')
@@ -71,7 +77,8 @@ def main():
     green, yellow, black = rules.get_rules()
 
     interface = Interface()
-    interface.run_helper(green, yellow, black, n_iter=250_000)
+    interface.run_helper(green, yellow, black,
+                         n_iter=200_000, c=2.)
 
 
 if __name__ == '__main__':
