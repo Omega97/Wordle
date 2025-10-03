@@ -41,20 +41,37 @@ class ColorRules:
 def main():
     """
     Good starters: CRATE, STANE, SHARE, TRIES
-    :return:
+
+    Good guesses:
+    _____ -> lions, loins
+
+    C____ -> ulmin, gluon
+    _R___ -> pling
+    __A__ -> shuln
+    ___T_ -> shiny
+    ____E -> loins
+
+    c____ -> loins
+    _r___ -> doily, sound
+    __a__ -> sloid, solid
+    ___t_ -> hoist
+    ____e -> lined, solid
+
+    __a_e -> angel
     """
     rules = ColorRules()
 
-    # Color rules                         WIDTH
-    rules.add_rule(guess='CRATE', code = '____E')
-    # rules.add_rule(guess='CRATE', code = '___T_')  # shiny
-    # rules.add_rule(guess='SHINY', code = '_hi__')
-    # rules.add_rule(guess='FAULT', code = '____t')
+    # Color rules
+    rules.add_rule(guess='CRATE', code = 'c_a_E')
+    # rules.add_rule(guess='CRATE', code = '____e')
+    # rules.add_rule(guess='LINED', code = 'l__E_')
+    # rules.add_rule(guess='WOMBS', code = '_O___')
+    # rules.add_rule(guess='HOVEL', code = 'HOVEL')
 
     green, yellow, black = rules.get_rules()
 
     interface = Interface()
-    interface.run_helper(green, yellow, black, n_iter=200_000)
+    interface.run_helper(green, yellow, black, n_iter=250_000)
 
 
 if __name__ == '__main__':
