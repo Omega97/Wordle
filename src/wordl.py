@@ -33,7 +33,6 @@ class Wordl:
 
     def set_new_colors(self, green: List[str], yellow: List[set], black: set):
         """
-
         :param green: letter in the correct place
         :param yellow: correct letter in the wrong place
         :param black: wrong letter
@@ -65,7 +64,6 @@ class Wordl:
         (the given letters are not present)
         """
         for c in self.black:
-            # todo without sum
             v = np.isin(self.wordles, c, assume_unique=True)
             v = np.sum(v, axis=1) == False
             self.wordles = self.wordles[v]
@@ -77,17 +75,18 @@ class Wordl:
         """
         for i in range(self.word_length):
             for c in self.yellow[i]:
-                # todo without sum
                 v = np.isin(self.wordles, c, assume_unique=True)
                 v[:, i] *= False
                 v = (np.sum(v, axis=1) > 0) == True
                 self.wordles = self.wordles[v]
 
     def update_yellow_position(self):
+        """
+        Remove words where a yellow letter appears in the position where it was marked yellow.
+        """
         for i in range(self.word_length):
-            c = self.yellow[i]
-            if len(c):
-                v = self.wordles[:, i] != c
+            if self.yellow[i]:  # Check if the set is non-empty
+                v = ~np.isin(self.wordles[:, i], list(self.yellow[i]))
                 self.wordles = self.wordles[v]
 
     def set_possible_solutions(self):
@@ -107,7 +106,7 @@ class Wordl:
     def guess(self, word, solution):
         assert len(word) == self.word_length
         assert len(solution) == self.word_length
-        self.reset_colors()                        # todo keep?
+        self.reset_colors()
         for i in range(len(word)):
             if solution[i] == word[i]:
                 self.green[i] = solution[i]
@@ -128,9 +127,16 @@ class Wordl:
         return len(self.wordles)
 
     def get_score(self):
+        # x = self.get_range()
+        # score = self._max_score - np.log2(x)
+        # return score
         x = self.get_range()
-        score = self._max_score - np.log2(x)
-        return score
+        if x == 0:
+            return 0  # No solutions remain, penalize
+        if x == 1:
+            return 1  # One solution, one guess needed
+        return 1 / (1 + np.log2(x))  # Estimate: 1 guess + log2(x) for remaining
+
 
     def __getitem__(self, item):
         def wrap():
@@ -157,8 +163,8 @@ class Wordl:
         most_common_word = None
         for i, dct in enumerate(search.run(n_iter, c=c)):
             if verbose:
-                # Get top 3 indices and scores
-                top_indices = np.argsort(search.scores)[-n_words:][::-1]  # Top 3, descending
+                # Get top n_words indices and scores
+                top_indices = np.argsort(search.scores)[-n_words:][::-1]
                 top_words = [self.guesses[idx] for idx in top_indices]
                 most_common_index = dct['most_visited_index']
                 most_visits = dct['most_visits']
