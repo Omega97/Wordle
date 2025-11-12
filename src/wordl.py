@@ -131,10 +131,12 @@ class Wordl:
             return self.possible_solutions
 
     def get_score(self):
-        """Function for computing the entropy of a guess."""
-        x = len(self.wordles)
-        score = self._max_score - np.log2(x)
-        return score
+        """
+        Function for computing the goodness of a guess (0=bad, 1=good).
+        """
+        n = len(self.wordles)
+        p = np.log2(n) / self._max_score
+        return 1 - p
 
     def __getitem__(self, index):
         def wrap():
@@ -150,27 +152,25 @@ class Wordl:
             return wordl.get_score()
         return wrap
 
-    def get_best_guess(self, n_iter=100_000, c=2., n_words=5, print_period=1000, verbose=True) -> str:
+    def get_best_guess(self, n_iter=300_000, c=2., n_words=5,
+                       print_period=1000, verbose=True) -> str:
         """
         Find the word that restricts the range of solutions the most.
         Search through all allowed guesses (including allowed_wordles and allowed_guesses).
         Returns the word that was most explored during search.
         """
-        prior = self.get_score()
-        if verbose:
-            print(f'(prior = {prior:.2f})\n')
 
-        # Init search
-        prior_scores = np.full(len(self.guesses), prior)
-        prior_visits = np.full(len(self.guesses), 1)
-        search = Search(self, prior_scores=prior_scores,
-                        c=c, max_visits_per_element=None)
+        # Init search (add one visit with value 0 to every guess)
+        n_guesses = len(self.guesses)
+        prior_scores = np.full(n_guesses, 0.)
+        prior_visits = np.full(n_guesses, 1)
+        search = Search(self, prior_values=prior_scores, prior_visits=prior_visits, c=c)
 
         most_common_word = None
         for i, dct in enumerate(search.run(n_iter)):
             if verbose:
                 # Get top n_words (for later)
-                sorted_visits = np.argsort(search.visits)
+                sorted_visits = np.argsort(search.get_visits_plus_score())  # heuristic
                 top_indices = sorted_visits[-n_words:][::-1]
                 top_words = [self.guesses[idx] for idx in top_indices]
                 most_common_index = dct['most_visited_index']

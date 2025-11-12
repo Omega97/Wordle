@@ -3,33 +3,45 @@ import numpy as np
 
 class Search:
 
-    def __init__(self, elements, prior_scores=None, prior_visits=None, c=2., max_visits_per_element=None):
+    def __init__(self, elements, prior_values=None, prior_visits=None, c=2., max_visits_per_element=None):
         """
         Find the index if the random variable with the highest
         average value in the smallest number of steps.
         Doesn't exploit correlation between the elements.
 
-        :param elements: elements[i]() should return
-            evaluation of the i-th element
-        :param prior_scores: prior average score for each element
+        :param elements: elements[i]() should return evaluation of the i-th element
+        :param prior_values: prior average score for each element
         :param prior_visits: prior number of visits for each element
         :param max_visits_per_element: maximum number of visits allowed per element (None = unlimited)
         """
         self.elements = elements
-        self.prior_scores = prior_scores
-        self.prior_visits = prior_visits
         self.n_elements = len(elements)
-        self.values = np.zeros(self.n_elements)  # sum of samples
-        self.visits = np.zeros(self.n_elements, dtype=int)
+        self.prior_values = prior_values
+        self.prior_visits = prior_visits
+        self.values = np.zeros(self.n_elements)             # sum of samples
+        self.visits = np.zeros(self.n_elements, dtype=int)  # count number of visits
         self.c = c  # Hyper-parameter
-        self.max_visits_per_element = max_visits_per_element
+        self.max_visits_per_element = max_visits_per_element  # todo remove?
 
-        if prior_visits is None:
-            prior_visits = np.zeros(self.n_elements, dtype=int)
-        self.visits += prior_visits
-        self.total_visits = self.visits.sum()
-
+        self.total_visits = 0
         self.priorities = None  # Which element to visit
+
+        self._apply_priors()
+
+    def add_values_and_visits(self, values, visits):
+        """Add values and visits to all the elements."""
+        self.values += values
+        self.visits += visits
+        self.total_visits = sum(self.visits)
+
+    def _apply_priors(self):
+        do_scores = self.prior_values is not None
+        do_values = self.prior_visits is not None
+
+        if do_scores and do_values:
+            self.add_values_and_visits(self.prior_values, self.prior_visits)
+        elif do_scores or do_values:
+            raise ValueError("You have to set both 'prior_scores' and 'prior_values'.")
 
     def get_total_visits(self) -> int:
         return self.total_visits
@@ -48,8 +60,11 @@ class Search:
         scores = self.values / np.maximum(self.visits, 1)
         return np.argmax(scores)
 
+    def get_visits(self) -> np.array:
+        return self.visits
+
     def get_scores(self, epsilon=1e-6):
-        return self.values / (self.visits + epsilon)
+        return self.values / (self.get_visits() + epsilon)
 
     def compute_priorities(self):
         """
@@ -133,7 +148,7 @@ class Search:
         best_index = self.get_best_index()
         most_visited_index = self.get_most_visited_index()
         # Return average value for best element, not sum
-        best_value = self.values[best_index] / max(self.visits[best_index], 1)
+        best_value = self.values[best_index] / max(self.get_visits()[best_index], 1)
         return {'last_visit_index': index,
                 'best_index': best_index,
                 'best_value': best_value,
@@ -171,3 +186,8 @@ class Search:
 
         # Visit the highest priority nodes
         yield from self._visit_high_priority_elements(n_stop)
+
+    def get_visits_plus_score(self, k=1.):
+        """
+        Heuristic: number of visits + a score in [0,1] to remove doubles. """
+        return self.get_visits() + self.get_scores() * k

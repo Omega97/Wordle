@@ -3,15 +3,15 @@ from scripts.wordlehelper import WordleHelper
 from src.color_rules import ColorRules
 
 
-def main(n_iter=400_000, c=2.):
+def main(n_iter=100_000, c=2.):
     """
-    Good starters: CRATE (also STANE, SHARE, TRIES)
+    Good starters: CRANE, SNARE, STARE, TRACE, CRATE, ...
     """
     rules = ColorRules()
 
     # Color rules (ADD RULES HERE)
-    rules.add_rule(guess='CRATE', code = 'c___E')
-    # rules.add_rule(guess='LOINS', code = 'D____')
+    rules.add_rule(guess='CRANE', code = '____E')
+    # rules.add_rule(guess='LOINS', code = '_____')
 
     # Run the computation
     wordle_helper = WordleHelper()
