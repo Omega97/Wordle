@@ -1,84 +1,21 @@
-"""
-This program helps you solve the wordle.
-"""
-# todo add interface
-from scripts.interface import Interface
+""" This program helps you solve today's Wordle. """
+from scripts.wordlehelper import WordleHelper
+from src.color_rules import ColorRules
 
 
-class ColorRules:
-
-    def __init__(self, word_length=5):
-        self.word_length = word_length
-        self.green = ['' for _ in range(word_length)]
-        self.yellow = [set() for _ in range(word_length)]
-        self.black = set()
-
-    def add_rule(self, guess: str, code: str):
-        """
-        Convert a word and the code into colors.
-        :param guess: full word
-        :param code: upper case = green, lowe case = yellow, otw. black
-        :return: green, yellow, black color rules
-
-        Example:
-        guess = 'CRATE'
-        solution = 'QUEUE'
-        code = '__e_E'
-        """
-        for i in range(self.word_length):
-            letter = guess[i].lower()
-            if code[i] == letter.upper():
-                self.green[i] = letter
-            elif code[i] == letter.lower():
-                self.yellow[i].add(letter)
-            else:
-                self.black.add(letter)
-
-    def get_rules(self):
-        return self.green, self.yellow, self.black
-
-
-def main():
+def main(n_iter=400_000, c=2.):
     """
-    Good starters: CRATE, STANE, SHARE, TRIES
-
-    Good guesses:
-    _____ -> lions, loins
-
-    C____ -> ulmin, gluon
-    _R___ -> pling
-    __A__ -> shuln
-    ___T_ -> shiny
-    ____E -> loins
-
-    c____ -> loins
-    _r___ -> doily, sound
-    __a__ -> sloid, solid
-    ___t_ -> hoist
-    ____e -> lined, solid
-
-    __a_e -> angel
+    Good starters: CRATE (also STANE, SHARE, TRIES)
     """
     rules = ColorRules()
 
-    # Color rules
-    rules.add_rule(guess='CRATE', code = '_r__e')
-    rules.add_rule(guess='SEWIN', code = '_e___')
-    rules.add_rule(guess='MUCHO', code = '____o')
-    rules.add_rule(guess='LORDS', code = '_or__')
+    # Color rules (ADD RULES HERE)
+    rules.add_rule(guess='CRATE', code = 'c___E')
+    # rules.add_rule(guess='LOINS', code = 'D____')
 
-    # rules.add_rule(guess='CRATE', code = 'cra__')
-    # rules.add_rule(guess='CRATE', code = 'c_a_E')
-    # rules.add_rule(guess='CRATE', code = '____e')
-    # rules.add_rule(guess='LINED', code = 'l__E_')
-    # rules.add_rule(guess='WOMBS', code = '_O___')
-    # rules.add_rule(guess='HOVEL', code = 'HOVEL')
-
-    green, yellow, black = rules.get_rules()
-
-    interface = Interface()
-    interface.run_helper(green, yellow, black,
-                         n_iter=200_000, c=2.)
+    # Run the computation
+    wordle_helper = WordleHelper()
+    wordle_helper.run_helper(rules.green, rules.yellow, rules.black, n_iter=n_iter, c=c)
 
 
 if __name__ == '__main__':

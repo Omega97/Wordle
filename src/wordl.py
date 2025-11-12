@@ -99,7 +99,10 @@ class Wordl:
             raise ValueError('Zero possible solutions!')
 
     def update_wordles(self):
-        """Update wordles"""
+        """
+        Update wordles.
+        Assign the list of possible solutions to 'self.possible_solutions' based on the rules.
+        """
         self.update_green()
         self.update_yellow_contains()
         self.update_black()
@@ -121,12 +124,14 @@ class Wordl:
         self.update_wordles()
 
     def get_possible_solutions(self):
+        """Return list of possible solutions."""
         if self.possible_solutions is None:
             return self.wordles
         else:
             return self.possible_solutions
 
     def get_score(self):
+        """Function for computing the entropy of a guess."""
         x = len(self.wordles)
         score = self._max_score - np.log2(x)
         return score
@@ -145,10 +150,11 @@ class Wordl:
             return wordl.get_score()
         return wrap
 
-    def get_best_guess(self, n_iter=100_000, c=2., n_words=5, print_period=200, verbose=True) -> str:
+    def get_best_guess(self, n_iter=100_000, c=2., n_words=5, print_period=1000, verbose=True) -> str:
         """
         Find the word that restricts the range of solutions the most.
         Search through all allowed guesses (including allowed_wordles and allowed_guesses).
+        Returns the word that was most explored during search.
         """
         prior = self.get_score()
         if verbose:
@@ -156,18 +162,22 @@ class Wordl:
 
         # Init search
         prior_scores = np.full(len(self.guesses), prior)
-        search = Search(self, prior_scores=prior_scores, c=c, max_visits_per_element=len(self.wordles))
+        prior_visits = np.full(len(self.guesses), 1)
+        search = Search(self, prior_scores=prior_scores,
+                        c=c, max_visits_per_element=None)
 
         most_common_word = None
         for i, dct in enumerate(search.run(n_iter)):
             if verbose:
-                # Get top n_words
+                # Get top n_words (for later)
                 sorted_visits = np.argsort(search.visits)
                 top_indices = sorted_visits[-n_words:][::-1]
                 top_words = [self.guesses[idx] for idx in top_indices]
                 most_common_index = dct['most_visited_index']
                 most_visits = dct['most_visits']
                 most_common_word = self.guesses[most_common_index]
+
+                # Print top words
                 if (i + 1) % print_period == 0:
                     txt = f'\r{i + 1:6}) '
                     if most_visits > 1:
@@ -177,11 +187,9 @@ class Wordl:
 
         if verbose:
             scores = search.get_scores()
-            # best_index = np.argmax(scores)
-            # best_score = scores[best_index]
             print('\n')
             print(f'top scores = {np.sort(scores)[-n_words:]}')
-            print(f'min/max visits {np.min(search.visits) / np.max(search.visits):.3f}')
+            print(f'max/min visits {np.max(search.visits)} / {np.min(search.visits)}')
             print(f'{np.sum(search.visits==0)} zeros')
 
         return most_common_word

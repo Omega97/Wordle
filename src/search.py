@@ -16,6 +16,8 @@ class Search:
         :param max_visits_per_element: maximum number of visits allowed per element (None = unlimited)
         """
         self.elements = elements
+        self.prior_scores = prior_scores
+        self.prior_visits = prior_visits
         self.n_elements = len(elements)
         self.values = np.zeros(self.n_elements)  # sum of samples
         self.visits = np.zeros(self.n_elements, dtype=int)
