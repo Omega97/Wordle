@@ -2,31 +2,32 @@
 Good starters: CRATE (also STANE, SHARE, TRIES)
 
 
-Followup (after CRATE):
+Followup CRATE CRANE
 
-_____ -> lions, loins
+_____ -> LIONS SPOIL
 
-C____ -> gluon, ulmin
-_R___ -> denis, pling
-__A__ -> folks, shuln
-___T_ -> shiny
-____E -> glues, loins
+O____ -> GLUON DOLCI
+_O___ -> DENIS TYPOS
+__O__ -> FOLKS SLOTH
+___O_ -> SHINY SPOIL
+____O -> GLUES GUILT
 
-c____ -> spice, loins
-_r___ -> sound, doily
-__a__ -> solid, sloid
-___t_ -> logan, sonic, hoist
-____e -> solid, lined
+o____ -> SPICE TOUCH
+_o___ -> SOUND SHOUT
+__o__ -> SOLID SALTY
+___o_ -> LOGAN PILOT
+____o -> SOLID SPLIT
 
-cr___ -> times
-c_a__ -> front
-c__t_ -> tapas
-c___e -> nimbi
-_ra__ -> mason
-_r_t_ -> white
-_r__e -> lines
-__at_ -> tonga, bills
-__a_e -> angel
-___te -> moped
+oo___ -> TIMES BOCCI
+o_o__ -> FRONT LIMBO
+o__o_ -> TAPAS
+o___o -> NIMBI
+_oo__ -> MASON
+_o_o_ -> WHITE
+_o__o -> LINES
+__oo_ -> BILLS
+__o_o -> ANGEL
+___oo -> MOPED
 
-c___E -> loins?
+o___O -> loins
+---oO -> ????? NIDUS
