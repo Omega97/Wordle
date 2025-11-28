@@ -1,19 +1,47 @@
 import numpy as np
 from copy import deepcopy
-from typing import List
+from typing import List, Dict, Optional
 from src.search import Search
+
+
+# ------------------------------------------------------------------
+# Constants
+# ------------------------------------------------------------------
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+N_LETTER = len(ALPHABET)  # 26
+WORD_LEN = 5
+
+
+# ------------------------------------------------------------------
+# Global immutable data – uint8 bytes from the start
+# ------------------------------------------------------------------
+_WORDLES_ARRAY: Optional[np.ndarray] = None   # (N, 5) uint8
+_GUESSES_ARRAY: Optional[np.ndarray] = None   # (M, 5) uint8
+_GUESS_TO_IDX: Optional[Dict[str, int]] = None
+
+
+def _init_globals(allowed_wordles: List[str], allowed_guesses: List[str]) -> None:
+    global _WORDLES_ARRAY, _GUESSES_ARRAY, _WORD_LENGTH
+    if _WORDLES_ARRAY is not None:
+        return
+
+    _WORDLES_ARRAY = np.array([np.array(list(s)) for s in allowed_wordles])
+    _GUESSES_ARRAY = np.array(list(set(allowed_wordles + allowed_guesses)))
+    _WORD_LENGTH = 5
 
 
 class Wordl:
 
-    def __init__(self, allowed_wordles: list|tuple, allowed_guesses: list|tuple):
-        assert type(allowed_wordles) in (list, tuple)
-        assert type(allowed_guesses) in (list, tuple)
+    @staticmethod
+    def get_guesses():
+        return _GUESSES_ARRAY
 
-        self.wordles = np.array([np.array(list(s)) for s in allowed_wordles])
-        self.guesses = np.array(list(set(allowed_wordles + allowed_guesses)))
-        self.word_length = self.wordles.shape[1]
-        self._max_score = np.log2(len(allowed_wordles))
+    def __init__(self, allowed_wordles: List[str], allowed_guesses: List[str]):
+
+        _init_globals(allowed_wordles, allowed_guesses)
+
+        self.wordles = deepcopy(_WORDLES_ARRAY)
+        self._max_score = np.log2(len(self.wordles))
 
         self.green = None   # list of letters in the right place
         self.yellow = None  # list of sets of letters in the word but not in that place
@@ -24,14 +52,14 @@ class Wordl:
         self.set_possible_solutions()
 
         # Track calls to __getitem__ for each guess index
-        self.call_counts = np.zeros(len(self.guesses), dtype=int)
+        self.call_counts = np.zeros(len(self.get_guesses()), dtype=int)
 
     def __len__(self):
-        return len(self.guesses)
+        return len(self.get_guesses())
 
     def reset_colors(self):
-        self.green = [''] * self.word_length
-        self.yellow = [set() for _ in range(self.word_length)]
+        self.green = [''] * _WORD_LENGTH
+        self.yellow = [set() for _ in range(_WORD_LENGTH)]
         self.black = set()
 
     def set_new_colors(self, green: List[str], yellow: List[set], black: set):
@@ -42,9 +70,9 @@ class Wordl:
         :return:
         """
         assert type(green) is list
-        assert len(green) == self.word_length
+        assert len(green) == _WORD_LENGTH
         assert type(yellow) is list
-        assert len(yellow) == self.word_length
+        assert len(yellow) == _WORD_LENGTH
         assert type(black) is set
         self.green = green
         self.yellow = yellow
@@ -55,7 +83,7 @@ class Wordl:
         Remove words that don't fit the 'green' condition
         (right letter in the right spot)
         """
-        for i in range(self.word_length):
+        for i in range(_WORD_LENGTH):
             letter = self.green[i]
             if len(letter):
                 indices = self.wordles[:, i] == letter
@@ -76,7 +104,7 @@ class Wordl:
         Remove words that don't fit the 'yellow' condition
         (right letter, but in the wrong spot)
         """
-        for i in range(self.word_length):
+        for i in range(_WORD_LENGTH):
             for c in self.yellow[i]:
                 v = np.isin(self.wordles, c, assume_unique=True)
                 v[:, i] *= False
@@ -87,7 +115,7 @@ class Wordl:
         """
         Remove words where a yellow letter appears in the position where it was marked yellow.
         """
-        for i in range(self.word_length):
+        for i in range(_WORD_LENGTH):
             if self.yellow[i]:  # Check if the set is non-empty
                 v = ~np.isin(self.wordles[:, i], list(self.yellow[i]))
                 self.wordles = self.wordles[v]
@@ -110,8 +138,8 @@ class Wordl:
         self.set_possible_solutions()
 
     def guess(self, word, solution):
-        assert len(word) == self.word_length
-        assert len(solution) == self.word_length
+        assert len(word) == _WORD_LENGTH
+        assert len(solution) == _WORD_LENGTH
         self.reset_colors()
         for i in range(len(word)):
             if solution[i] == word[i]:
@@ -140,7 +168,7 @@ class Wordl:
 
     def __getitem__(self, index):
         def wrap():
-            word_guess = self.guesses[index]
+            word_guess = self.get_guesses()[index]
 
             solution_index = self.call_counts[index] % len(self.wordles)  # loop around just in case
             self.call_counts[index] += 1
@@ -161,7 +189,7 @@ class Wordl:
         """
 
         # Init search (add one visit with value 0 to every guess)
-        n_guesses = len(self.guesses)
+        n_guesses = len(self.get_guesses())
         prior_scores = np.full(n_guesses, 0.)
         prior_visits = np.full(n_guesses, 1)
         search = Search(self, prior_values=prior_scores, prior_visits=prior_visits, c=c)
@@ -172,10 +200,10 @@ class Wordl:
                 # Get top n_words (for later)
                 sorted_visits = np.argsort(search.get_visits_plus_score())  # heuristic
                 top_indices = sorted_visits[-n_words:][::-1]
-                top_words = [self.guesses[idx] for idx in top_indices]
+                top_words = [self.get_guesses()[idx] for idx in top_indices]
                 most_common_index = dct['most_visited_index']
                 most_visits = dct['most_visits']
-                most_common_word = self.guesses[most_common_index]
+                most_common_word = self.get_guesses()[most_common_index]
 
                 # Print top words
                 if (i + 1) % print_period == 0:

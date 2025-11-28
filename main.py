@@ -1,10 +1,10 @@
 """ This program helps you solve today's Wordle. """
 from scripts.wordlehelper import WordleHelper
+from time import time
 from src.color_rules import ColorRules
-#todo TINGE not allowed solution?
 
 
-def main(n_iter=300_000, c=1.5):
+def main(n_iter=1_000, c=1.5):
     """
     Good starters: CRANE, SNARE, STARE, TRACE, CRATE, ...
     """
@@ -20,4 +20,7 @@ def main(n_iter=300_000, c=1.5):
 
 
 if __name__ == '__main__':
+    t = time()
     main()
+    t = time() - t
+    print(f'time = {t:.2f} s')
